@@ -1,11 +1,11 @@
 """
-OASIS Agent Profile生成器
-将Zep图谱中的实体转换为OASIS模拟平台所需的Agent Profile格式
+OASIS Agent Profile generator
+Converts entities from the Zep knowledge graph into the Agent Profile format required by the OASIS simulation platform
 
-优化改进：
-1. 调用Zep检索功能二次丰富节点信息
-2. 优化提示词生成非常详细的人设
-3. 区分个人实体和抽象群体实体
+Improvements:
+1. Calls Zep retrieval to further enrich node information
+2. Optimized prompts to generate highly detailed personas
+3. Distinguishes between individual entities and abstract group entities
 """
 
 import json
@@ -27,41 +27,41 @@ logger = get_logger('mirofish.oasis_profile')
 
 @dataclass
 class OasisAgentProfile:
-    """OASIS Agent Profile数据结构"""
-    # 通用字段
+    """OASIS Agent Profile data structure"""
+    # Common fields
     user_id: int
     user_name: str
     name: str
     bio: str
     persona: str
-    
-    # 可选字段 - Reddit风格
+
+    # Optional fields - Reddit style
     karma: int = 1000
-    
-    # 可选字段 - Twitter风格
+
+    # Optional fields - Twitter style
     friend_count: int = 100
     follower_count: int = 150
     statuses_count: int = 500
-    
-    # 额外人设信息
+
+    # Additional persona information
     age: Optional[int] = None
     gender: Optional[str] = None
     mbti: Optional[str] = None
     country: Optional[str] = None
     profession: Optional[str] = None
     interested_topics: List[str] = field(default_factory=list)
-    
-    # 来源实体信息
+
+    # Source entity information
     source_entity_uuid: Optional[str] = None
     source_entity_type: Optional[str] = None
     
     created_at: str = field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d"))
     
     def to_reddit_format(self) -> Dict[str, Any]:
-        """转换为Reddit平台格式"""
+        """Convert to Reddit platform format"""
         profile = {
             "user_id": self.user_id,
-            "username": self.user_name,  # OASIS 库要求字段名为 username（无下划线）
+            "username": self.user_name,  # OASIS library requires field name "username" (no underscore)
             "name": self.name,
             "bio": self.bio,
             "persona": self.persona,
@@ -69,7 +69,7 @@ class OasisAgentProfile:
             "created_at": self.created_at,
         }
         
-        # 添加额外人设信息（如果有）
+        # Add additional persona information (if available)
         if self.age:
             profile["age"] = self.age
         if self.gender:
@@ -82,14 +82,14 @@ class OasisAgentProfile:
             profile["profession"] = self.profession
         if self.interested_topics:
             profile["interested_topics"] = self.interested_topics
-        
+
         return profile
-    
+
     def to_twitter_format(self) -> Dict[str, Any]:
-        """转换为Twitter平台格式"""
+        """Convert to Twitter platform format"""
         profile = {
             "user_id": self.user_id,
-            "username": self.user_name,  # OASIS 库要求字段名为 username（无下划线）
+            "username": self.user_name,  # OASIS library requires field name "username" (no underscore)
             "name": self.name,
             "bio": self.bio,
             "persona": self.persona,
@@ -99,7 +99,7 @@ class OasisAgentProfile:
             "created_at": self.created_at,
         }
         
-        # 添加额外人设信息
+        # Add additional persona information
         if self.age:
             profile["age"] = self.age
         if self.gender:
@@ -112,11 +112,11 @@ class OasisAgentProfile:
             profile["profession"] = self.profession
         if self.interested_topics:
             profile["interested_topics"] = self.interested_topics
-        
+
         return profile
-    
+
     def to_dict(self) -> Dict[str, Any]:
-        """转换为完整字典格式"""
+        """Convert to full dictionary format"""
         return {
             "user_id": self.user_id,
             "user_name": self.user_name,
@@ -141,17 +141,17 @@ class OasisAgentProfile:
 
 class OasisProfileGenerator:
     """
-    OASIS Profile生成器
-    
-    将Zep图谱中的实体转换为OASIS模拟所需的Agent Profile
-    
-    优化特性：
-    1. 调用Zep图谱检索功能获取更丰富的上下文
-    2. 生成非常详细的人设（包括基本信息、职业经历、性格特征、社交媒体行为等）
-    3. 区分个人实体和抽象群体实体
+    OASIS Profile generator
+
+    Converts entities from the Zep knowledge graph into Agent Profiles needed for OASIS simulation
+
+    Optimized features:
+    1. Calls Zep graph retrieval to obtain richer context
+    2. Generates very detailed personas (including basic info, career history, personality traits, social media behavior, etc.)
+    3. Distinguishes between individual entities and abstract group entities
     """
-    
-    # MBTI类型列表
+
+    # MBTI type list
     MBTI_TYPES = [
         "INTJ", "INTP", "ENTJ", "ENTP",
         "INFJ", "INFP", "ENFJ", "ENFP",
@@ -159,19 +159,19 @@ class OasisProfileGenerator:
         "ISTP", "ISFP", "ESTP", "ESFP"
     ]
     
-    # 常见国家列表
+    # Common countries list
     COUNTRIES = [
         "China", "US", "UK", "Japan", "Germany", "France", 
         "Canada", "Australia", "Brazil", "India", "South Korea"
     ]
     
-    # 个人类型实体（需要生成具体人设）
+    # Individual-type entities (need to generate specific personas)
     INDIVIDUAL_ENTITY_TYPES = [
         "student", "alumni", "professor", "person", "publicfigure", 
         "expert", "faculty", "official", "journalist", "activist"
     ]
     
-    # 群体/机构类型实体（需要生成群体代表人设）
+    # Group/institutional-type entities (need to generate representative account personas)
     GROUP_ENTITY_TYPES = [
         "university", "governmentagency", "organization", "ngo", 
         "mediaoutlet", "company", "institution", "group", "community"
@@ -190,52 +190,52 @@ class OasisProfileGenerator:
         self.model_name = model_name or Config.LLM_MODEL_NAME
         
         if not self.api_key:
-            raise ValueError("LLM_API_KEY 未配置")
+            raise ValueError("LLM_API_KEY is not configured")
         
         self.client = OpenAI(
             api_key=self.api_key,
             base_url=self.base_url
         )
         
-        # Zep客户端用于检索丰富上下文
+        # Zep client for retrieving enriched context
         self.zep_api_key = zep_api_key or Config.ZEP_API_KEY
         self.zep_client = None
         self.graph_id = graph_id
-        
+
         if self.zep_api_key:
             try:
                 self.zep_client = Zep(api_key=self.zep_api_key)
             except Exception as e:
-                logger.warning(f"Zep客户端初始化失败: {e}")
+                logger.warning(f"Zep client initialization failed: {e}")
     
     def generate_profile_from_entity(
-        self, 
-        entity: EntityNode, 
+        self,
+        entity: EntityNode,
         user_id: int,
         use_llm: bool = True
     ) -> OasisAgentProfile:
         """
-        从Zep实体生成OASIS Agent Profile
-        
+        Generate an OASIS Agent Profile from a Zep entity
+
         Args:
-            entity: Zep实体节点
-            user_id: 用户ID（用于OASIS）
-            use_llm: 是否使用LLM生成详细人设
-            
+            entity: Zep entity node
+            user_id: User ID (for OASIS)
+            use_llm: Whether to use LLM to generate detailed persona
+
         Returns:
             OasisAgentProfile
         """
         entity_type = entity.get_entity_type() or "Entity"
-        
-        # 基础信息
+
+        # Basic information
         name = entity.name
         user_name = self._generate_username(name)
-        
-        # 构建上下文信息
+
+        # Build context information
         context = self._build_entity_context(entity)
-        
+
         if use_llm:
-            # 使用LLM生成详细人设
+            # Use LLM to generate detailed persona
             profile_data = self._generate_profile_with_llm(
                 entity_name=name,
                 entity_type=entity_type,
@@ -244,7 +244,7 @@ class OasisProfileGenerator:
                 context=context
             )
         else:
-            # 使用规则生成基础人设
+            # Use rule-based generation for basic persona
             profile_data = self._generate_profile_rule_based(
                 entity_name=name,
                 entity_type=entity_type,
@@ -273,27 +273,27 @@ class OasisProfileGenerator:
         )
     
     def _generate_username(self, name: str) -> str:
-        """生成用户名"""
-        # 移除特殊字符，转换为小写
+        """Generate a username"""
+        # Remove special characters, convert to lowercase
         username = name.lower().replace(" ", "_")
         username = ''.join(c for c in username if c.isalnum() or c == '_')
-        
-        # 添加随机后缀避免重复
+
+        # Add random suffix to avoid duplicates
         suffix = random.randint(100, 999)
         return f"{username}_{suffix}"
     
     def _search_zep_for_entity(self, entity: EntityNode) -> Dict[str, Any]:
         """
-        使用Zep图谱混合搜索功能获取实体相关的丰富信息
-        
-        Zep没有内置混合搜索接口，需要分别搜索edges和nodes然后合并结果。
-        使用并行请求同时搜索，提高效率。
-        
+        Use Zep graph hybrid search to retrieve rich information about an entity
+
+        Zep does not have a built-in hybrid search interface; edges and nodes must be searched
+        separately and results merged. Parallel requests are used for efficiency.
+
         Args:
-            entity: 实体节点对象
-            
+            entity: Entity node object
+
         Returns:
-            包含facts, node_summaries, context的字典
+            Dictionary containing facts, node_summaries, and context
         """
         import concurrent.futures
         
@@ -308,19 +308,19 @@ class OasisProfileGenerator:
             "context": ""
         }
         
-        # 必须有graph_id才能进行搜索
+        # graph_id is required for search
         if not self.graph_id:
-            logger.debug(f"跳过Zep检索：未设置graph_id")
+            logger.debug(f"Skipping Zep retrieval: graph_id not set")
             return results
-        
-        comprehensive_query = f"关于{entity_name}的所有信息、活动、事件、关系和背景"
-        
+
+        comprehensive_query = f"All information, activities, events, relationships, and background about {entity_name}"
+
         def search_edges():
-            """搜索边（事实/关系）- 带重试机制"""
+            """Search edges (facts/relationships) - with retry mechanism"""
             max_retries = 3
             last_exception = None
             delay = 2.0
-            
+
             for attempt in range(max_retries):
                 try:
                     return self.zep_client.graph.search(
@@ -333,19 +333,19 @@ class OasisProfileGenerator:
                 except Exception as e:
                     last_exception = e
                     if attempt < max_retries - 1:
-                        logger.debug(f"Zep边搜索第 {attempt + 1} 次失败: {str(e)[:80]}, 重试中...")
+                        logger.debug(f"Zep edge search attempt {attempt + 1} failed: {str(e)[:80]}, retrying...")
                         time.sleep(delay)
                         delay *= 2
                     else:
-                        logger.debug(f"Zep边搜索在 {max_retries} 次尝试后仍失败: {e}")
+                        logger.debug(f"Zep edge search failed after {max_retries} attempts: {e}")
             return None
-        
+
         def search_nodes():
-            """搜索节点（实体摘要）- 带重试机制"""
+            """Search nodes (entity summaries) - with retry mechanism"""
             max_retries = 3
             last_exception = None
             delay = 2.0
-            
+
             for attempt in range(max_retries):
                 try:
                     return self.zep_client.graph.search(
@@ -358,139 +358,139 @@ class OasisProfileGenerator:
                 except Exception as e:
                     last_exception = e
                     if attempt < max_retries - 1:
-                        logger.debug(f"Zep节点搜索第 {attempt + 1} 次失败: {str(e)[:80]}, 重试中...")
+                        logger.debug(f"Zep node search attempt {attempt + 1} failed: {str(e)[:80]}, retrying...")
                         time.sleep(delay)
                         delay *= 2
                     else:
-                        logger.debug(f"Zep节点搜索在 {max_retries} 次尝试后仍失败: {e}")
+                        logger.debug(f"Zep node search failed after {max_retries} attempts: {e}")
             return None
-        
+
         try:
-            # 并行执行edges和nodes搜索
+            # Execute edges and nodes search in parallel
             with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
                 edge_future = executor.submit(search_edges)
                 node_future = executor.submit(search_nodes)
-                
-                # 获取结果
+
+                # Retrieve results
                 edge_result = edge_future.result(timeout=30)
                 node_result = node_future.result(timeout=30)
-            
-            # 处理边搜索结果
+
+            # Process edge search results
             all_facts = set()
             if edge_result and hasattr(edge_result, 'edges') and edge_result.edges:
                 for edge in edge_result.edges:
                     if hasattr(edge, 'fact') and edge.fact:
                         all_facts.add(edge.fact)
             results["facts"] = list(all_facts)
-            
-            # 处理节点搜索结果
+
+            # Process node search results
             all_summaries = set()
             if node_result and hasattr(node_result, 'nodes') and node_result.nodes:
                 for node in node_result.nodes:
                     if hasattr(node, 'summary') and node.summary:
                         all_summaries.add(node.summary)
                     if hasattr(node, 'name') and node.name and node.name != entity_name:
-                        all_summaries.add(f"相关实体: {node.name}")
+                        all_summaries.add(f"Related entity: {node.name}")
             results["node_summaries"] = list(all_summaries)
-            
-            # 构建综合上下文
+
+            # Build comprehensive context
             context_parts = []
             if results["facts"]:
-                context_parts.append("事实信息:\n" + "\n".join(f"- {f}" for f in results["facts"][:20]))
+                context_parts.append("Facts:\n" + "\n".join(f"- {f}" for f in results["facts"][:20]))
             if results["node_summaries"]:
-                context_parts.append("相关实体:\n" + "\n".join(f"- {s}" for s in results["node_summaries"][:10]))
+                context_parts.append("Related entities:\n" + "\n".join(f"- {s}" for s in results["node_summaries"][:10]))
             results["context"] = "\n\n".join(context_parts)
-            
-            logger.info(f"Zep混合检索完成: {entity_name}, 获取 {len(results['facts'])} 条事实, {len(results['node_summaries'])} 个相关节点")
-            
+
+            logger.info(f"Zep hybrid retrieval complete: {entity_name}, retrieved {len(results['facts'])} facts, {len(results['node_summaries'])} related nodes")
+
         except concurrent.futures.TimeoutError:
-            logger.warning(f"Zep检索超时 ({entity_name})")
+            logger.warning(f"Zep retrieval timed out ({entity_name})")
         except Exception as e:
-            logger.warning(f"Zep检索失败 ({entity_name}): {e}")
+            logger.warning(f"Zep retrieval failed ({entity_name}): {e}")
         
         return results
     
     def _build_entity_context(self, entity: EntityNode) -> str:
         """
-        构建实体的完整上下文信息
-        
-        包括：
-        1. 实体本身的边信息（事实）
-        2. 关联节点的详细信息
-        3. Zep混合检索到的丰富信息
+        Build complete context information for an entity
+
+        Includes:
+        1. Edge information (facts) from the entity itself
+        2. Detailed information about related nodes
+        3. Rich information retrieved via Zep hybrid search
         """
         context_parts = []
-        
-        # 1. 添加实体属性信息
+
+        # 1. Add entity attribute information
         if entity.attributes:
             attrs = []
             for key, value in entity.attributes.items():
                 if value and str(value).strip():
                     attrs.append(f"- {key}: {value}")
             if attrs:
-                context_parts.append("### 实体属性\n" + "\n".join(attrs))
-        
-        # 2. 添加相关边信息（事实/关系）
+                context_parts.append("### Entity Attributes\n" + "\n".join(attrs))
+
+        # 2. Add related edge information (facts/relationships)
         existing_facts = set()
         if entity.related_edges:
             relationships = []
-            for edge in entity.related_edges:  # 不限制数量
+            for edge in entity.related_edges:  # no quantity limit
                 fact = edge.get("fact", "")
                 edge_name = edge.get("edge_name", "")
                 direction = edge.get("direction", "")
-                
+
                 if fact:
                     relationships.append(f"- {fact}")
                     existing_facts.add(fact)
                 elif edge_name:
                     if direction == "outgoing":
-                        relationships.append(f"- {entity.name} --[{edge_name}]--> (相关实体)")
+                        relationships.append(f"- {entity.name} --[{edge_name}]--> (related entity)")
                     else:
-                        relationships.append(f"- (相关实体) --[{edge_name}]--> {entity.name}")
-            
+                        relationships.append(f"- (related entity) --[{edge_name}]--> {entity.name}")
+
             if relationships:
-                context_parts.append("### 相关事实和关系\n" + "\n".join(relationships))
-        
-        # 3. 添加关联节点的详细信息
+                context_parts.append("### Related Facts and Relationships\n" + "\n".join(relationships))
+
+        # 3. Add detailed information about related nodes
         if entity.related_nodes:
             related_info = []
-            for node in entity.related_nodes:  # 不限制数量
+            for node in entity.related_nodes:  # no quantity limit
                 node_name = node.get("name", "")
                 node_labels = node.get("labels", [])
                 node_summary = node.get("summary", "")
-                
-                # 过滤掉默认标签
+
+                # Filter out default labels
                 custom_labels = [l for l in node_labels if l not in ["Entity", "Node"]]
                 label_str = f" ({', '.join(custom_labels)})" if custom_labels else ""
-                
+
                 if node_summary:
                     related_info.append(f"- **{node_name}**{label_str}: {node_summary}")
                 else:
                     related_info.append(f"- **{node_name}**{label_str}")
-            
+
             if related_info:
-                context_parts.append("### 关联实体信息\n" + "\n".join(related_info))
-        
-        # 4. 使用Zep混合检索获取更丰富的信息
+                context_parts.append("### Related Entity Information\n" + "\n".join(related_info))
+
+        # 4. Use Zep hybrid search to retrieve richer information
         zep_results = self._search_zep_for_entity(entity)
-        
+
         if zep_results.get("facts"):
-            # 去重：排除已存在的事实
+            # Deduplicate: exclude already existing facts
             new_facts = [f for f in zep_results["facts"] if f not in existing_facts]
             if new_facts:
-                context_parts.append("### Zep检索到的事实信息\n" + "\n".join(f"- {f}" for f in new_facts[:15]))
-        
+                context_parts.append("### Facts Retrieved via Zep\n" + "\n".join(f"- {f}" for f in new_facts[:15]))
+
         if zep_results.get("node_summaries"):
-            context_parts.append("### Zep检索到的相关节点\n" + "\n".join(f"- {s}" for s in zep_results["node_summaries"][:10]))
+            context_parts.append("### Related Nodes Retrieved via Zep\n" + "\n".join(f"- {s}" for s in zep_results["node_summaries"][:10]))
         
         return "\n\n".join(context_parts)
     
     def _is_individual_entity(self, entity_type: str) -> bool:
-        """判断是否是个人类型实体"""
+        """Determine whether the entity is an individual-type entity"""
         return entity_type.lower() in self.INDIVIDUAL_ENTITY_TYPES
-    
+
     def _is_group_entity(self, entity_type: str) -> bool:
-        """判断是否是群体/机构类型实体"""
+        """Determine whether the entity is a group/institutional-type entity"""
         return entity_type.lower() in self.GROUP_ENTITY_TYPES
     
     def _generate_profile_with_llm(
@@ -502,11 +502,11 @@ class OasisProfileGenerator:
         context: str
     ) -> Dict[str, Any]:
         """
-        使用LLM生成非常详细的人设
-        
-        根据实体类型区分：
-        - 个人实体：生成具体的人物设定
-        - 群体/机构实体：生成代表性账号设定
+        Use LLM to generate a very detailed persona
+
+        Distinguishes by entity type:
+        - Individual entities: generate specific character settings
+        - Group/institutional entities: generate representative account settings
         """
         
         is_individual = self._is_individual_entity(entity_type)
@@ -520,10 +520,10 @@ class OasisProfileGenerator:
                 entity_name, entity_type, entity_summary, entity_attributes, context
             )
 
-        # 尝试多次生成，直到成功或达到最大重试次数
+        # Try multiple times until success or max retries reached
         max_attempts = 3
         last_error = None
-        
+
         for attempt in range(max_attempts):
             try:
                 response = self.client.chat.completions.create(
@@ -533,67 +533,67 @@ class OasisProfileGenerator:
                         {"role": "user", "content": prompt}
                     ],
                     response_format={"type": "json_object"},
-                    temperature=0.7 - (attempt * 0.1)  # 每次重试降低温度
-                    # 不设置max_tokens，让LLM自由发挥
+                    temperature=0.7 - (attempt * 0.1)  # lower temperature on each retry
+                    # no max_tokens set, let LLM generate freely
                 )
-                
+
                 content = response.choices[0].message.content
-                
-                # 检查是否被截断（finish_reason不是'stop'）
+
+                # Check if truncated (finish_reason is not 'stop')
                 finish_reason = response.choices[0].finish_reason
                 if finish_reason == 'length':
-                    logger.warning(f"LLM输出被截断 (attempt {attempt+1}), 尝试修复...")
+                    logger.warning(f"LLM output was truncated (attempt {attempt+1}), attempting fix...")
                     content = self._fix_truncated_json(content)
-                
-                # 尝试解析JSON
+
+                # Attempt to parse JSON
                 try:
                     result = json.loads(content)
-                    
-                    # 验证必需字段
+
+                    # Validate required fields
                     if "bio" not in result or not result["bio"]:
                         result["bio"] = entity_summary[:200] if entity_summary else f"{entity_type}: {entity_name}"
                     if "persona" not in result or not result["persona"]:
-                        result["persona"] = entity_summary or f"{entity_name}是一个{entity_type}。"
-                    
+                        result["persona"] = entity_summary or f"{entity_name} is a {entity_type}."
+
                     return result
-                    
+
                 except json.JSONDecodeError as je:
-                    logger.warning(f"JSON解析失败 (attempt {attempt+1}): {str(je)[:80]}")
-                    
-                    # 尝试修复JSON
+                    logger.warning(f"JSON parsing failed (attempt {attempt+1}): {str(je)[:80]}")
+
+                    # Attempt to fix JSON
                     result = self._try_fix_json(content, entity_name, entity_type, entity_summary)
                     if result.get("_fixed"):
                         del result["_fixed"]
                         return result
-                    
+
                     last_error = je
-                    
+
             except Exception as e:
-                logger.warning(f"LLM调用失败 (attempt {attempt+1}): {str(e)[:80]}")
+                logger.warning(f"LLM call failed (attempt {attempt+1}): {str(e)[:80]}")
                 last_error = e
                 import time
-                time.sleep(1 * (attempt + 1))  # 指数退避
-        
-        logger.warning(f"LLM生成人设失败（{max_attempts}次尝试）: {last_error}, 使用规则生成")
+                time.sleep(1 * (attempt + 1))  # exponential backoff
+
+        logger.warning(f"LLM persona generation failed ({max_attempts} attempts): {last_error}, falling back to rule-based generation")
         return self._generate_profile_rule_based(
             entity_name, entity_type, entity_summary, entity_attributes
         )
     
     def _fix_truncated_json(self, content: str) -> str:
-        """修复被截断的JSON（输出被max_tokens限制截断）"""
+        """Fix truncated JSON (output truncated by max_tokens limit)"""
         import re
-        
-        # 如果JSON被截断，尝试闭合它
+
+        # If JSON is truncated, attempt to close it
         content = content.strip()
-        
-        # 计算未闭合的括号
+
+        # Count unclosed brackets
         open_braces = content.count('{') - content.count('}')
         open_brackets = content.count('[') - content.count(']')
-        
-        # 检查是否有未闭合的字符串
-        # 简单检查：如果最后一个引号后没有逗号或闭合括号，可能是字符串被截断
+
+        # Check for unclosed strings
+        # Simple check: if the last character is not a quote, comma, or closing bracket, the string may be truncated
         if content and content[-1] not in '",}]':
-            # 尝试闭合字符串
+            # Attempt to close the string
             content += '"'
         
         # 闭合括号
@@ -603,74 +603,74 @@ class OasisProfileGenerator:
         return content
     
     def _try_fix_json(self, content: str, entity_name: str, entity_type: str, entity_summary: str = "") -> Dict[str, Any]:
-        """尝试修复损坏的JSON"""
+        """Attempt to repair damaged JSON"""
         import re
-        
-        # 1. 首先尝试修复被截断的情况
+
+        # 1. First try to fix truncated cases
         content = self._fix_truncated_json(content)
-        
-        # 2. 尝试提取JSON部分
+
+        # 2. Try to extract JSON portion
         json_match = re.search(r'\{[\s\S]*\}', content)
         if json_match:
             json_str = json_match.group()
-            
-            # 3. 处理字符串中的换行符问题
-            # 找到所有字符串值并替换其中的换行符
+
+            # 3. Handle newline issues within strings
+            # Find all string values and replace newlines within them
             def fix_string_newlines(match):
                 s = match.group(0)
-                # 替换字符串内的实际换行符为空格
+                # Replace actual newlines inside strings with spaces
                 s = s.replace('\n', ' ').replace('\r', ' ')
-                # 替换多余空格
+                # Replace excessive whitespace
                 s = re.sub(r'\s+', ' ', s)
                 return s
-            
-            # 匹配JSON字符串值
+
+            # Match JSON string values
             json_str = re.sub(r'"[^"\\]*(?:\\.[^"\\]*)*"', fix_string_newlines, json_str)
-            
-            # 4. 尝试解析
+
+            # 4. Try to parse
             try:
                 result = json.loads(json_str)
                 result["_fixed"] = True
                 return result
             except json.JSONDecodeError as e:
-                # 5. 如果还是失败，尝试更激进的修复
+                # 5. If still failing, try more aggressive repair
                 try:
-                    # 移除所有控制字符
+                    # Remove all control characters
                     json_str = re.sub(r'[\x00-\x1f\x7f-\x9f]', ' ', json_str)
-                    # 替换所有连续空白
+                    # Replace all consecutive whitespace
                     json_str = re.sub(r'\s+', ' ', json_str)
                     result = json.loads(json_str)
                     result["_fixed"] = True
                     return result
                 except:
                     pass
-        
-        # 6. 尝试从内容中提取部分信息
+
+        # 6. Try to extract partial information from content
         bio_match = re.search(r'"bio"\s*:\s*"([^"]*)"', content)
-        persona_match = re.search(r'"persona"\s*:\s*"([^"]*)', content)  # 可能被截断
-        
+        persona_match = re.search(r'"persona"\s*:\s*"([^"]*)', content)  # may be truncated
+
         bio = bio_match.group(1) if bio_match else (entity_summary[:200] if entity_summary else f"{entity_type}: {entity_name}")
-        persona = persona_match.group(1) if persona_match else (entity_summary or f"{entity_name}是一个{entity_type}。")
-        
-        # 如果提取到了有意义的内容，标记为已修复
+        persona = persona_match.group(1) if persona_match else (entity_summary or f"{entity_name} is a {entity_type}.")
+
+        # If meaningful content was extracted, mark as fixed
         if bio_match or persona_match:
-            logger.info(f"从损坏的JSON中提取了部分信息")
+            logger.info(f"Extracted partial information from damaged JSON")
             return {
                 "bio": bio,
                 "persona": persona,
                 "_fixed": True
             }
-        
-        # 7. 完全失败，返回基础结构
-        logger.warning(f"JSON修复失败，返回基础结构")
+
+        # 7. Complete failure, return basic structure
+        logger.warning(f"JSON repair failed, returning basic structure")
         return {
             "bio": entity_summary[:200] if entity_summary else f"{entity_type}: {entity_name}",
-            "persona": entity_summary or f"{entity_name}是一个{entity_type}。"
+            "persona": entity_summary or f"{entity_name} is a {entity_type}."
         }
     
     def _get_system_prompt(self, is_individual: bool) -> str:
-        """获取系统提示词"""
-        base_prompt = "你是社交媒体用户画像生成专家。生成详细、真实的人设用于舆论模拟,最大程度还原已有现实情况。必须返回有效的JSON格式，所有字符串值不能包含未转义的换行符。使用中文。"
+        """Get the system prompt"""
+        base_prompt = "You are an expert in generating social media user profiles. Generate detailed, realistic personas for opinion simulation that closely reflect real-world situations. You must return valid JSON format; all string values must not contain unescaped newline characters."
         return base_prompt
     
     def _build_individual_persona_prompt(

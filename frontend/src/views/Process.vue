@@ -443,7 +443,7 @@ const graphSvg = ref(null)
 // Polling timer
 let pollTimer = null
 
-// 计算属性
+// Computed properties
 const statusClass = computed(() => {
   if (error.value) return 'error'
   if (currentPhase.value >= 2) return 'completed'
@@ -746,7 +746,7 @@ const fetchGraphData = async () => {
       const graphId = projectResponse.data.graph_id
       projectData.value = projectResponse.data
       
-      // 获取图谱数据
+      // Fetch graph data
       const graphResponse = await getGraphData(graphId)
       
       if (graphResponse.success && graphResponse.data) {
@@ -1427,7 +1427,7 @@ onUnmounted(() => {
   animation: pulse 1s infinite;
 }
 
-/* 节点/边详情面板 */
+/* Node / edge detail panel */
 .detail-panel {
   position: absolute;
   top: 16px;
@@ -1543,7 +1543,7 @@ onUnmounted(() => {
   color: #666;
 }
 
-/* 边详情关系展示 */
+/* Edge detail relationship display */
 .edge-relation {
   display: flex;
   align-items: center;
@@ -1587,7 +1587,7 @@ onUnmounted(() => {
   border-bottom: 1px solid #E0E0E0;
 }
 
-/* Properties 属性列表 */
+/* Properties list */
 .properties-list {
   margin-top: 8px;
   padding: 10px;
@@ -1616,7 +1616,7 @@ onUnmounted(() => {
   word-break: break-word;
 }
 
-/* Episodes 列表 */
+/* Episodes list */
 .episodes-list {
   margin-top: 8px;
   display: flex;
@@ -1641,7 +1641,7 @@ onUnmounted(() => {
   margin-bottom: 10px;
 }
 
-/* 图谱图例 */
+/* Graph legend */
 .graph-legend {
   display: flex;
   flex-wrap: wrap;
@@ -1672,7 +1672,7 @@ onUnmounted(() => {
   color: #999;
 }
 
-/* 右侧面板 - 50% default */
+/* Right panel - 50% default */
 .right-panel {
   width: 50%;
   flex: none;
@@ -1702,14 +1702,14 @@ onUnmounted(() => {
   margin-right: 8px;
 }
 
-/* 流程内容 */
+/* Process content */
 .process-content {
   flex: 1;
   overflow-y: auto;
   padding: 24px;
 }
 
-/* 流程阶段 */
+/* Process phases */
 .process-phase {
   margin-bottom: 24px;
   border: 1px solid #E0E0E0;
@@ -1795,12 +1795,12 @@ onUnmounted(() => {
   color: #fff;
 }
 
-/* 阶段详情 */
+/* Phase details */
 .phase-detail {
   padding: 16px;
 }
 
-/* 实体标签 */
+/* Entity tags */
 .entity-tags {
   display: flex;
   flex-wrap: wrap;
@@ -1815,7 +1815,7 @@ onUnmounted(() => {
   color: #333;
 }
 
-/* 关系列表 */
+/* Relation list */
 .relation-list {
   font-size: 0.8rem;
 }
@@ -1852,7 +1852,7 @@ onUnmounted(() => {
   font-size: 0.75rem;
 }
 
-/* 本体生成进度 */
+/* Ontology generation progress */
 .ontology-progress {
   display: flex;
   align-items: center;
@@ -1876,7 +1876,7 @@ onUnmounted(() => {
   color: #333;
 }
 
-/* 等待状态 */
+/* Waiting state */
 .waiting-state {
   padding: 16px;
   background: #F9F9F9;
@@ -1889,7 +1889,7 @@ onUnmounted(() => {
   color: #999;
 }
 
-/* 进度条 */
+/* Progress bar */
 .progress-bar {
   height: 6px;
   background: #E0E0E0;
@@ -1918,7 +1918,7 @@ onUnmounted(() => {
   font-weight: 600;
 }
 
-/* 构建结果 */
+/* Build result */
 .build-result {
   display: flex;
   gap: 16px;
@@ -1946,7 +1946,7 @@ onUnmounted(() => {
   letter-spacing: 0.05em;
 }
 
-/* 下一步按钮 */
+/* Next step button */
 .next-step-section {
   margin-top: 24px;
   padding-top: 24px;
@@ -1983,7 +1983,7 @@ onUnmounted(() => {
   font-size: 1.2rem;
 }
 
-/* 项目信息面板 */
+/* Project info panel */
 .project-panel {
   border-top: 1px solid #E0E0E0;
   background: #FAFAFA;
@@ -2041,7 +2041,7 @@ onUnmounted(() => {
   color: #666;
 }
 
-/* 响应式 */
+/* Responsive */
 @media (max-width: 1024px) {
   .main-content {
     flex-direction: column;

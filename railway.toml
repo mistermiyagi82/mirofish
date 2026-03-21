@@ -1,0 +1,3 @@
+[deploy]
+startCommand = "sh -c 'cd backend && uv run python run.py'"
+restartPolicyType = "on_failure"

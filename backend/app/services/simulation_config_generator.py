@@ -270,9 +270,9 @@ class SimulationConfigGenerator:
         """
         logger.info(f"Starting intelligent simulation configuration generation: simulation_id={simulation_id}, entity count={len(entities)}")
         
-        # 计算总步骤数
+        # Calculate total steps
         num_batches = math.ceil(len(entities) / self.AGENTS_PER_BATCH)
-        total_steps = 3 + num_batches  # 时间配置 + 事件配置 + N批Agent + 平台配置
+        total_steps = 3 + num_batches  # time config + event config + N agent batches + platform config
         current_step = 0
         
         def report_progress(step: int, message: str):
@@ -282,7 +282,7 @@ class SimulationConfigGenerator:
                 progress_callback(step, total_steps, message)
             logger.info(f"[{step}/{total_steps}] {message}")
         
-        # 1. 构建基础上下文信息
+        # 1. Build base context information
         context = self._build_context(
             simulation_requirement=simulation_requirement,
             document_text=document_text,
